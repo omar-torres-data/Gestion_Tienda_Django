@@ -1,14 +1,22 @@
-{# Tarjetas de acceso a módulos. Espera "modulos": lista de (ícono, título, descripción). #}
+{# Tarjetas de acceso a módulos. Espera "modulos": lista de (ícono, título, descripción, nombre de URL o None). #}
 <div class="row g-4">
-  {% for icono, titulo, descripcion in modulos %}
+  {% for icono, titulo, descripcion, destino in modulos %}
     <div class="col-sm-6 col-lg-4">
-      <div class="card tarjeta h-100 border-0 shadow-sm p-4 opacity-75">
+      <div class="card tarjeta h-100 border-0 shadow-sm p-4{% if not destino %} opacity-75{% endif %}">
         <div class="d-flex align-items-start gap-3">
           <div class="icono-circulo flex-shrink-0"><i class="bi {{ icono }}"></i></div>
           <div>
-            <h2 class="h6 fw-bold mb-1">{{ titulo }}</h2>
+            <h2 class="h6 fw-bold mb-1">
+              {% if destino %}
+                <a href="{% url destino %}" class="stretched-link text-reset text-decoration-none">{{ titulo }}</a>
+              {% else %}
+                {{ titulo }}
+              {% endif %}
+            </h2>
             <p class="small text-secondary mb-2">{{ descripcion }}</p>
-            <span class="badge text-bg-light border">Próximamente</span>
+            {% if not destino %}
+              <span class="badge text-bg-light border">Próximamente</span>
+            {% endif %}
           </div>
         </div>
       </div>
