@@ -6,7 +6,7 @@ from apps.core.constantes import EstadosSesion
 # Create your models here.
 class Caja(models.Model):
     nombre = models.CharField("Caja", max_length=50, unique=True)
-    ubicacion = models.CharField("Ubicacion", max_length=100, blank=True)
+    ubicacion = models.CharField("Ubicación", max_length=100, blank=True)
     activa = models.BooleanField(default=True)
 
     class Meta:
