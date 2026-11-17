@@ -2,6 +2,7 @@ from django.db import transaction
 from apps.clientes.models import Cliente
 from .models import Usuario
 from apps.core.constantes import Rol
+from apps.empleados.models import Empleado
 
 class VinculoError(Exception):
      """Error de negocio al vincular un cliente con una cuenta."""
@@ -72,3 +73,24 @@ def registrarse(datos):
     cliente = obtener_o_crear_cliente(datos)
     vincular_cliente_cuenta(cliente, usuario)
     return usuario
+
+def registrar_empleados(usuario, datos):
+    empleado = Empleado.objects.create(
+        usuario = usuario,
+        cargo =datos["cargo"],
+        salario = datos["salario"],
+        fecha_ingreso = datos["fecha_ingreso"],
+    )
+    return empleado
+
+"""
+   Al entrar a la uncion se crea una transacción, si no hay errores se confirma con un commit,
+   Si hay error, se deshace todo con un Rollback
+"""
+@transaction.atomic
+def alta_empleado(datos):
+    """Alta de empleado: cuenta con rol EMPLEADO + registro de empleado, todo o nada."""
+    usuario = crear_cuenta(datos, Rol.EMPLEADO)
+    empleado = registrar_empleados(usuario, datos)
+    return empleado
+

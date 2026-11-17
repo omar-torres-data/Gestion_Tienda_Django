@@ -47,6 +47,3 @@ class IngresoView(LoginView):
 
 class SalirView(LogoutView):
     next_page=reverse_lazy("core:inicio")  #Pendiente defirnir la salida
-
-
-      

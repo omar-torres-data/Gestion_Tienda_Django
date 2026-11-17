@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load moneda %}
+{% block title %}Empleados{% endblock %}
+{% block sidebar %}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 fw-bold mb-0">Empleados</h1>
+    <a href="{% url 'empleados:empleado_nuevo' %}" class="btn btn-primary">
+      <i class="bi bi-plus-lg"></i> Nuevo empleado
+    </a>
+  </div>
+
+  <div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Nombre</th>
+            <th>Documento</th>
+            <th>Correo</th>
+            <th>Cargo</th>
+            <th class="text-end">Salario</th>
+            <th>Ingreso</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for empleado in empleados %}
+          <tr>
+            <td class="fw-semibold">{{ empleado.usuario.get_full_name }}</td>
+            <td>{{ empleado.usuario.tipo_documento }} {{ empleado.usuario.documento }}</td>
+            <td>{{ empleado.usuario.email }}</td>
+            <td>{{ empleado.cargo.nombre }}</td>
+            <td class="text-end">{{ empleado.salario|cop }}</td>
+            <td>{{ empleado.fecha_ingreso|date:"d/m/Y" }}</td>
+            <td>
+              {% if empleado.estado == "ACTIVO" %}
+                <span class="badge text-bg-success">{{ empleado.get_estado_display }}</span>
+              {% elif empleado.estado == "RETIRADO" or empleado.estado == "INACTIVO" %}
+                <span class="badge text-bg-secondary">{{ empleado.get_estado_display }}</span>
+              {% else %}
+                <span class="badge text-bg-warning">{{ empleado.get_estado_display }}</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="text-center text-secondary py-4">Aún no hay empleados.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

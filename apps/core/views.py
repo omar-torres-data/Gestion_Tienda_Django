@@ -22,7 +22,7 @@ class PanelAdminView(RolRequeridoMixins, TemplateView):
         ("bi-person-vcard", "Clientes", "Datos de los clientes.", "clientes:lista_clientes"),
         ("bi-receipt", "Ventas y facturas", "Consultar y anular ventas.", None),
         ("bi-cash-stack", "Caja", "Turnos y arqueos de todas las cajas.", "caja:caja_list"),
-        ("bi-person-badge", "Empleados y nómina", "Cargos, empleados y pagos.", "empleados:cargo_list"),
+        ("bi-person-badge", "Empleados y nómina", "Cargos, empleados y pagos.", "empleados:empleado_list"),
         ("bi-graph-up", "Reportes", "Ventas, utilidades e inventario.", None),
     ]}
 

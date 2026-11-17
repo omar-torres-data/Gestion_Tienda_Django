@@ -1,15 +1,18 @@
 from django.shortcuts import render
 from apps.core.mixins import RolRequeridoMixins
-from django.views.generic import ListView, CreateView, UpdateView
-from apps.empleados.models import Cargo
+from django.views.generic import ListView, CreateView, UpdateView, FormView
+from apps.empleados.models import Cargo, Empleado
 from apps.core.constantes import Rol
-from apps.empleados.forms import CargoForm
+from apps.empleados.forms import CargoForm, EmpleadoAltaForm
+from apps.usuarios.services import alta_empleado
 from django.contrib.messages.views import SuccessMessageMixin
 from django.views.generic.detail import SingleObjectMixin
 from django.urls import reverse_lazy
 from django.views import View
 from django.contrib import messages
 from django.shortcuts import redirect
+
+
 # Create your views here.
 
 class CargoView(RolRequeridoMixins, ListView):
@@ -50,3 +53,25 @@ class CargoDeactivate(RolRequeridoMixins, SingleObjectMixin, View):
          else:
              messages.success(request, "Se ha desactivado el cargo")    
          return redirect("empleados:cargo_list")
+
+
+class EmpleadoCreateView(RolRequeridoMixins, FormView):
+    template_name="empleados/empleado_form.html"
+    form_class = EmpleadoAltaForm
+    roles_permitidos=[Rol.ADMIN]
+    success_url=reverse_lazy("empleados:empleado_list")
+
+    def form_valid(self, form):
+        """Llama al servicio para crear la cuenta y el empleado; luego redirige a la lista."""
+        alta_empleado(form.cleaned_data)
+        messages.success(self.request, "Empleado creado con éxito")
+        return super().form_valid(form)
+    
+class EmpleadoListView(RolRequeridoMixins, ListView):
+    """ Clase que lista los empleados de la tienda """
+    model = Empleado
+    template_name = "empleados/empleado_list.html"    
+    roles_permitidos = [Rol.ADMIN]
+    context_object_name="empleados"
+    queryset=Empleado.objects.select_related("usuario", "cargo")
+    
