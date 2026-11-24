@@ -11,4 +11,5 @@ urlpatterns = [
     path("cargo_deactivate/<int:pk>/", views.CargoDeactivate.as_view(), name="cargo_deactivate"),
     path("lista_empleados/", views.EmpleadoListView.as_view(), name = "empleado_list"),
     path("empleado_nuevo/", views.EmpleadoCreateView.as_view(), name = "empleado_nuevo"),
+    path("empleado_update/<int:pk>/", views.EmpleadoUpdateView.as_view(), name = "empleado_update"),
 ]

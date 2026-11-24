@@ -3,7 +3,7 @@ from apps.core.mixins import RolRequeridoMixins
 from django.views.generic import ListView, CreateView, UpdateView, FormView
 from apps.empleados.models import Cargo, Empleado
 from apps.core.constantes import Rol
-from apps.empleados.forms import CargoForm, EmpleadoAltaForm
+from apps.empleados.forms import CargoForm, EmpleadoAltaForm, EmpleadoForm
 from apps.usuarios.services import alta_empleado
 from django.contrib.messages.views import SuccessMessageMixin
 from django.views.generic.detail import SingleObjectMixin
@@ -74,4 +74,12 @@ class EmpleadoListView(RolRequeridoMixins, ListView):
     roles_permitidos = [Rol.ADMIN]
     context_object_name="empleados"
     queryset=Empleado.objects.select_related("usuario", "cargo")
+
+class EmpleadoUpdateView(RolRequeridoMixins, SuccessMessageMixin, UpdateView):
+    template_name = "empleados/empleado_update.html"
+    model = Empleado
+    form_class = EmpleadoForm
+    roles_permitidos=[Rol.ADMIN]
+    success_message = "El empleado se ha actualizado exitosamente"
+    success_url = reverse_lazy("empleados:empleado_list")
     
