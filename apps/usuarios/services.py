@@ -1,12 +1,9 @@
 from django.db import transaction
 from apps.clientes.models import Cliente
 from .models import Usuario
-from apps.core.constantes import Rol
+from apps.core.constantes import Rol, EstadoEmpleado
 from apps.empleados.models import Empleado
-
-class VinculoError(Exception):
-     """Error de negocio al vincular un cliente con una cuenta."""
-
+from .exceptions import VinculoError, EmpleadoError
 
 """
 Cliente.objects consulta la tabla clientes. .select_for_update() 
@@ -16,7 +13,7 @@ busca el cliente con ese tipo y número de documento. Y .first()
 devuelve el primero que encuentre, o None si no existe, sin lanzar error
 """
 
-def crear_cuenta(datos, rol):
+def crear_cuenta(datos: dict, rol: str) -> Usuario:
     """Crea una cuenta de acceso. No sabe nada de clientes ni empleados."""
     usuario = Usuario.objects.create_user(
         email=datos["email"],
@@ -30,7 +27,7 @@ def crear_cuenta(datos, rol):
     )
     return usuario
 
-def registrar_cliente(datos):
+def registrar_cliente(datos: dict) -> Cliente:
     cliente = Cliente.objects.create(
         nombre = f"{datos["first_name"]} {datos["last_name"]}",
         tipo_documento = datos["tipo_documento"],
@@ -41,7 +38,7 @@ def registrar_cliente(datos):
     )
     return cliente
 
-def obtener_o_crear_cliente(datos):
+def obtener_o_crear_cliente(datos: dict) -> Cliente:
     """Devuelve el cliente con ese documento (bloqueado); si no existe, lo crea.
        Cubre a quien ya compró sin cuenta (P3): se reutiliza su registro.
     """
@@ -57,9 +54,9 @@ def obtener_o_crear_cliente(datos):
    si no se entra por el if se vincula el cliente con el usuario
    Al vincularlos, la app puede saber qué cliente es la persona que inició sesión y mostrarle sus datos:
 """
-def vincular_cliente_cuenta(cliente, usuario):
+def vincular_cliente_cuenta(cliente: Cliente, usuario: Usuario) -> Usuario:
 
-    if cliente.usuario:
+    if cliente.usuario:   # El cliente ya tiene usuario registrado
         raise VinculoError("El cliente ya tiene cuenta")
     
     cliente.usuario = usuario
@@ -67,14 +64,15 @@ def vincular_cliente_cuenta(cliente, usuario):
     return usuario
 
 @transaction.atomic
-def registrarse(datos):
+def registrarse(datos: dict) -> Usuario:
     """Proceso de la página de registro: cuenta + cliente + vínculo, todo o nada."""
+
     usuario = crear_cuenta(datos, rol=Rol.CLIENTE)
     cliente = obtener_o_crear_cliente(datos)
     vincular_cliente_cuenta(cliente, usuario)
     return usuario
 
-def registrar_empleados(usuario, datos):
+def registrar_empleados(usuario: Usuario, datos: dict) -> Empleado:
     empleado = Empleado.objects.create(
         usuario = usuario,
         cargo =datos["cargo"],
@@ -83,14 +81,54 @@ def registrar_empleados(usuario, datos):
     )
     return empleado
 
+def fijar_acceso(usuario:Usuario, estado:bool) -> Usuario:
+    """Activa o bloquea la cuenta del usuario y guarda solo ese campo."""
+    usuario.is_active = estado 
+    usuario.save(update_fields=["is_active"])
+    return usuario
+
 """
    Al entrar a la uncion se crea una transacción, si no hay errores se confirma con un commit,
    Si hay error, se deshace todo con un Rollback
 """
 @transaction.atomic
-def alta_empleado(datos):
+def alta_empleado(datos: dict) -> Empleado:
     """Alta de empleado: cuenta con rol EMPLEADO + registro de empleado, todo o nada."""
     usuario = crear_cuenta(datos, Rol.EMPLEADO)
     empleado = registrar_empleados(usuario, datos)
+    return empleado
+
+def fijar_estado_empleado(empleado: Empleado, estado: str) -> Empleado:
+    """ Cambia el estado laboral del empleado y guarda solo ese campo """
+    empleado.estado = estado
+    empleado.save(update_fields=["estado"])
+    return empleado
+
+def bloquear_empleado(empleado_id: int) -> Empleado:
+    """Lee el empleado y bloquea su fila hasta que termine la transacción."""
+    return Empleado.objects.select_for_update().select_related("usuario").get(pk=empleado_id)
+
+@transaction.atomic
+def retirar_empleado(empleado_id:int) ->Empleado:
+    """Retira al empleado: estado RETIRADO y cuenta bloqueada, todo o nada."""
+    empleado = bloquear_empleado(empleado_id)
+    if empleado.estado == EstadoEmpleado.RETIRADO:
+        raise EmpleadoError("El empleado ya está retirado.")
+
+    fijar_estado_empleado(empleado, EstadoEmpleado.RETIRADO)
+    fijar_acceso(empleado.usuario, False)
+    return empleado
+
+@transaction.atomic
+def reingresar_empleado(empleado_id:int)->Empleado:
+    """ Reingresa a un empleado RETIRADO: estado ACTIVO y cuenta habilitada, todo o nada."""
+
+    empleado = bloquear_empleado(empleado_id)   #Bloquea dentro de la transaccion
+
+    if empleado.estado != EstadoEmpleado.RETIRADO:
+        raise EmpleadoError("El empleado no está retirado")
+
+    fijar_estado_empleado(empleado, EstadoEmpleado.ACTIVO)
+    fijar_acceso(empleado.usuario, True)
     return empleado
 

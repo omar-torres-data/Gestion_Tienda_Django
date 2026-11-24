@@ -1,10 +1,12 @@
 from django.shortcuts import render
 from apps.core.mixins import RolRequeridoMixins
+from apps.usuarios.services import retirar_empleado, reingresar_empleado
 from django.views.generic import ListView, CreateView, UpdateView, FormView
 from apps.empleados.models import Cargo, Empleado
-from apps.core.constantes import Rol
+from apps.core.constantes import Rol, EstadoEmpleado
 from apps.empleados.forms import CargoForm, EmpleadoAltaForm, EmpleadoForm
 from apps.usuarios.services import alta_empleado
+from apps.usuarios.exceptions import EmpleadoError
 from django.contrib.messages.views import SuccessMessageMixin
 from django.views.generic.detail import SingleObjectMixin
 from django.urls import reverse_lazy
@@ -82,4 +84,27 @@ class EmpleadoUpdateView(RolRequeridoMixins, SuccessMessageMixin, UpdateView):
     roles_permitidos=[Rol.ADMIN]
     success_message = "El empleado se ha actualizado exitosamente"
     success_url = reverse_lazy("empleados:empleado_list")
+
+    def get_queryset(self):
+        """Excluye a los RETIRADO: para editarlos primero hay que reingresarlos."""
+        return super().get_queryset().exclude(estado=EstadoEmpleado.RETIRADO)
+
+class EmpleadoRetiroView(RolRequeridoMixins, SingleObjectMixin, View):
+    """Retira o reingresa al empleado según su estado (solo POST); los cambios los hace el servicio."""
+    model = Empleado
+    roles_permitidos = [Rol.ADMIN]
+
+    def post(self, request, *args, **kwargs):
+        empleado = self.get_object()
+        try:
+            if empleado.estado != EstadoEmpleado.RETIRADO:
+                retirar_empleado(empleado.id)   #tambien empleado.pk
+                messages.success(request, f"El empleado {empleado.usuario.get_full_name()} ha sido retirado")
+            else:
+                reingresar_empleado(empleado_id=empleado.id)
+                messages.success(request, f"El empleado {empleado.usuario.get_full_name()} ha sido reingresado")
+        except EmpleadoError as e:
+            messages.error(request, str(e))
+        return redirect("empleados:empleado_list")
+    
     

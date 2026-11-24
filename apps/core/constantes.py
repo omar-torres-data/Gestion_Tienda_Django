@@ -32,6 +32,7 @@ class EstadoEmpleado(models.TextChoices):
     PERMISO = "PERMISO", "Permiso"
     RETIRADO = "RETIRADO", "Retirado"
     SUSPENDIDO = "SUSPENDIDO", "Suspendido"
+ 
 
 
 class TarifaIVA(models.IntegerChoices):

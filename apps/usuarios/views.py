@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from .forms import RegistroForm, LoginForm
-from .services import registrarse, VinculoError
+from .services import registrarse
+from .exceptions import VinculoError
 from django.views.generic import FormView
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib import messages
