@@ -72,7 +72,8 @@ def registrarse(datos: dict) -> Usuario:
     vincular_cliente_cuenta(cliente, usuario)
     return usuario
 
-def registrar_empleados(usuario: Usuario, datos: dict) -> Empleado:
+def registrar_empleado(usuario: Usuario, datos: dict) -> Empleado:
+    """ Este servicio recibe un usuario y sus datos, registra el empleado y lo retorna"""
     empleado = Empleado.objects.create(
         usuario = usuario,
         cargo =datos["cargo"],
@@ -81,7 +82,7 @@ def registrar_empleados(usuario: Usuario, datos: dict) -> Empleado:
     )
     return empleado
 
-def fijar_acceso(usuario:Usuario, estado:bool) -> Usuario:
+def fijar_acceso(usuario:Usuario, estado:bool)-> Usuario:
     """Activa o bloquea la cuenta del usuario y guarda solo ese campo."""
     usuario.is_active = estado 
     usuario.save(update_fields=["is_active"])
@@ -95,7 +96,7 @@ def fijar_acceso(usuario:Usuario, estado:bool) -> Usuario:
 def alta_empleado(datos: dict) -> Empleado:
     """Alta de empleado: cuenta con rol EMPLEADO + registro de empleado, todo o nada."""
     usuario = crear_cuenta(datos, Rol.EMPLEADO)
-    empleado = registrar_empleados(usuario, datos)
+    empleado = registrar_empleado(usuario, datos)
     return empleado
 
 def fijar_estado_empleado(empleado: Empleado, estado: str) -> Empleado:
