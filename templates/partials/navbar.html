@@ -25,8 +25,20 @@
               <li><a class="dropdown-item" href="{% url 'empleados:empleado_list' %}"><i class="bi bi-people me-2"></i>Empleados</a></li>
               <li><a class="dropdown-item" href="{% url 'empleados:cargo_list' %}"><i class="bi bi-person-badge me-2"></i>Cargos</a></li>
               <li><a class="dropdown-item" href="{% url 'caja:caja_list' %}"><i class="bi bi-cash-stack me-2"></i>Cajas</a></li>
+              <li><a class="dropdown-item" href="{% url 'caja:caja_historial' %}"><i class="bi bi-clock-history me-2"></i>Turnos de caja</a></li>
             </ul>
           </li>
+        {% elif user.rol == "EMPLEADO" %}
+          <li class="nav-item dropdown">
+            <a class="nav-link px-3 dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Caja
+            </a>
+            <ul class="dropdown-menu shadow-sm">
+              <li><a class="dropdown-item" href="{% url 'caja:apertura' %}"><i class="bi bi-unlock me-2"></i>Abrir turno</a></li>
+              <li><a class="dropdown-item" href="{% url 'caja:caja_historial' %}"><i class="bi bi-clock-history me-2"></i>Mis turnos</a></li>
+            </ul>
+          </li>
+          <li class="nav-item"><a class="nav-link px-3" href="{% url 'clientes:lista_clientes' %}">Clientes</a></li>
         {% endif %}
       </ul>
 

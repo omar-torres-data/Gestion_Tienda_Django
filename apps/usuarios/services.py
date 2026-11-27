@@ -4,7 +4,7 @@ from .models import Usuario
 from apps.core.constantes import Rol, EstadoEmpleado
 from apps.empleados.models import Empleado
 from .exceptions import VinculoError, EmpleadoError
-
+from apps.caja.services import turno_abierto_de
 """
 Cliente.objects consulta la tabla clientes. .select_for_update() 
 lee la fila y la bloquea hasta que termine la transacción, 
@@ -115,7 +115,9 @@ def retirar_empleado(empleado_id: int) -> Empleado:
     empleado = bloquear_empleado(empleado_id)
     if empleado.estado == EstadoEmpleado.RETIRADO:
         raise EmpleadoError("El empleado ya está retirado.")
-
+    
+    if turno_abierto_de(empleado):
+       raise EmpleadoError("No se puede retirar: el empleado tiene un turno de caja abierto.")
     fijar_estado_empleado(empleado, EstadoEmpleado.RETIRADO)
     fijar_acceso(empleado.usuario, False)
     return empleado
@@ -133,3 +135,5 @@ def reingresar_empleado(empleado_id: int) -> Empleado:
     fijar_acceso(empleado.usuario, True)
     return empleado
 
+
+    

@@ -21,7 +21,7 @@ class PanelAdminView(RolRequeridoMixins, TemplateView):
         ("bi-truck", "Proveedores y compras", "Proveedores, compras y pagos.", "proveedores:proveedor_list"),
         ("bi-person-vcard", "Clientes", "Datos de los clientes.", "clientes:lista_clientes"),
         ("bi-receipt", "Ventas y facturas", "Consultar y anular ventas.", None),
-        ("bi-cash-stack", "Caja", "Turnos y arqueos de todas las cajas.", "caja:caja_list"),
+        ("bi-cash-stack", "Caja", "Turnos y arqueos de todas las cajas.", "caja:caja_historial"),
         ("bi-person-badge", "Empleados y nómina", "Cargos, empleados y pagos.", "empleados:empleado_list"),
         ("bi-graph-up", "Reportes", "Ventas, utilidades e inventario.", None),
     ]}
@@ -33,7 +33,7 @@ class PanelEmpleadoView(RolRequeridoMixins, TemplateView):
     roles_permitidos = [Rol.EMPLEADO]
     # Sin costos ni acumulado de caja (RNF-10)
     extra_context = {"modulos": [
-        ("bi-cash-coin", "Mi turno de caja", "Abrir, cobrar y cerrar tu turno.", None),
+        ("bi-cash-coin", "Mi turno de caja", "Abrir, cobrar y cerrar tu turno.", "caja:caja_historial"),
         ("bi-cart-plus", "Nueva venta", "Registrar una venta y cobrarla.", None),
         ("bi-receipt", "Mis ventas", "Consultar las ventas que registraste.", None),
         ("bi-person-vcard", "Clientes", "Crear y consultar clientes.", "clientes:lista_clientes"),
