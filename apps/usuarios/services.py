@@ -82,7 +82,7 @@ def registrar_empleado(usuario: Usuario, datos: dict) -> Empleado:
     )
     return empleado
 
-def fijar_acceso(usuario:Usuario, estado:bool)-> Usuario:
+def fijar_acceso(usuario: Usuario, estado: bool) -> Usuario:
     """Activa o bloquea la cuenta del usuario y guarda solo ese campo."""
     usuario.is_active = estado 
     usuario.save(update_fields=["is_active"])
@@ -110,7 +110,7 @@ def bloquear_empleado(empleado_id: int) -> Empleado:
     return Empleado.objects.select_for_update().select_related("usuario").get(pk=empleado_id)
 
 @transaction.atomic
-def retirar_empleado(empleado_id:int) ->Empleado:
+def retirar_empleado(empleado_id: int) -> Empleado:
     """Retira al empleado: estado RETIRADO y cuenta bloqueada, todo o nada."""
     empleado = bloquear_empleado(empleado_id)
     if empleado.estado == EstadoEmpleado.RETIRADO:
@@ -121,7 +121,7 @@ def retirar_empleado(empleado_id:int) ->Empleado:
     return empleado
 
 @transaction.atomic
-def reingresar_empleado(empleado_id:int)->Empleado:
+def reingresar_empleado(empleado_id: int) -> Empleado:
     """ Reingresa a un empleado RETIRADO: estado ACTIVO y cuenta habilitada, todo o nada."""
 
     empleado = bloquear_empleado(empleado_id)   #Bloquea dentro de la transaccion
